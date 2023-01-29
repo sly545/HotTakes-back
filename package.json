@@ -1,0 +1,33 @@
+{
+  "name": "hot-take-api",
+  "version": "1.0.0",
+  "description": "Aplication Back HOT-takes",
+  "main": "index.js",
+  "scripts": {
+    "start": "nodemon server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/sly545/HOT-take-API.git"
+  },
+  "author": "Ferrandes sylvain",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/sly545/HOT-take-API/issues"
+  },
+  "homepage": "https://github.com/sly545/HOT-take-API#readme",
+  "dependencies": {
+    "bcrypt": "^5.1.0",
+    "dotenv": "^16.0.3",
+    "express": "^4.18.2",
+    "express-rate-limit": "^6.7.0",
+    "helmet": "^6.0.1",
+    "jsonwebtoken": "^9.0.0",
+    "mongoose": "^6.8.3",
+    "mongoose-unique-validator": "^3.1.0",
+    "multer": "^1.4.5-lts.1",
+    "nodemon": "^2.0.20",
+    "password-validator": "^5.3.0",
+    "validator": "^13.7.0"
+  }
+}
