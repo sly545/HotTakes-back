@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 
-mongoose.connect(`mongodb+srv://${process.env.MONGO_DB_USER}:${process.env.MONGO_DB_USER_MDP}@${process.env.MONGO_DB_HOST}/${process.env.MONGO_DB_COLLECTION}`,
+mongoose.connect('mongodb+srv://sylvain:ROMbibamb01@cluster0.hne8jxc.mongodb.net/test',
 { useNewUrlParser: true,
   useUnifiedTopology: true })  
 .then(() => console.log('Connexion à MongoDB réussie !'))
