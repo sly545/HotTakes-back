@@ -2,6 +2,8 @@ const express = require('express');
 const app = express();
 const helmet = require("helmet");
 const path = require("path");
+const saucesModel = require('./models/sauces')
+
 
 // Variables d'environnements
 require("dotenv").config();

@@ -1,12 +1,13 @@
 const express = require("express");
 const router = express.Router();
-const saucesControl = require("../controllers/user");
+const UseControl = require("../controllers/user");
 
 //Hachage du mot de passe
 //de l'utilisateur, ajout de
 //l'utilisateur à la base de
 //données//
-router.post("/signup", (req, res) => {
+
+router.post("/signup",UseControl.signup, (req, res) => {
   res.status(200).json({ "user": "Utilisateur bien enregistré" });
 });
 
@@ -19,9 +20,10 @@ router.post("/signup", (req, res) => {
 //et un token web JSON signé
 //(contenant également l'_id
 //de l'utilisateur).
-router.post("/login", (req, res) => {
+router.post("/login",UseControl.login, (req, res) => {
   res.status(200).json({ "user": "Utilisateur bien conécter" });
 });
 
 // on exporte router
 module.exports = router;
+
