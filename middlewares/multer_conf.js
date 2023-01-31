@@ -1,4 +1,4 @@
-// on importe multer
+
 const multer = require("multer");
 // on définit les images/formats reçu en appartenance de format ( comme un dictionnaire)
 const MIME_TYPES = {
@@ -26,7 +26,7 @@ const storage = multer.diskStorage({
     const name = file.originalname.split(" ").join("_");
     // permet de créer une extension de fichiers correspondant au mimetype (via dictionnaire) envoyé par le frontend
     const extension = MIME_TYPES[file.mimetype];
-    // si le fichier correspond à un fichier image https://developer.mozilla.org/fr/docs/Web/HTTP/Basics_of_HTTP/MIME_types/Common_types
+    
     if (
       file.mimetype === "image/jpeg" ||
       file.mimetype === "image/png" ||
