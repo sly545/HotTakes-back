@@ -2,7 +2,8 @@ const express = require('express');
 const app = express();
 const helmet = require("helmet");
 const path = require("path");
-const saucesModel = require('./models/sauces')
+
+
 
 
 // Variables d'environnements
@@ -37,6 +38,8 @@ app.use((req, res, next) => {
   );
   next();
 });
+
+
 
 
 // Middleware de body parsing

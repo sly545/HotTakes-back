@@ -1,6 +1,6 @@
-// modif cours securiser les api
 const http = require('http');
 const app = require('./app');
+
 
 const normalizePort = val => {
   const port = parseInt(val, 10);

@@ -3,7 +3,7 @@ const router = express.Router();
 const saucesController = require("../controllers/sauces");
 const auth = require("../middlewares/auth");
 const multer = require("../middlewares/multer_conf");
-const Sauce = require("../models/sauces")
+
 
 
 // GET /api/sauces/
@@ -21,17 +21,17 @@ router.post('/',auth,multer,saucesController.createSauce,(req,res) => {
 
 // GET /api/sauces/:id
 // Recup une sauce par son id
-router.get('/:id',auth,(req, res) => {
+router.get('/:id',auth,saucesController.getOneSauce,(req, res) => {
   res.status(200).json({ "sauces": "Voici la sauce que vous avez demandés" });
 });
 
 
-router.put('/:id',auth, (req, res) => {
+router.put('/:id',auth,multer,saucesController.modifySauce,(req, res) => {
   res.status(200).json({ "sauces": "sauces modifier" });
 });
 
 
-router.delete('/:id',auth,(req, res) => {
+router.delete('/:id',auth,saucesController.deleteSauce,(req, res) => {
   res.status(200).json({ "sauces": "sauces suprimer" });
 });
 
