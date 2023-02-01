@@ -1,6 +1,9 @@
 const express = require('express');
 const app = express();
-const helmet = require("helmet");
+
+//ça me bloque les photos
+//const helmet = require("helmet");
+
 const path = require("path");
 
 
@@ -46,7 +49,10 @@ app.use((req, res, next) => {
 app.use(express.json());
 
 // Middleware helmet pour sécuriser les en-têtes HTTP
-app.use(helmet());
+// ça me bloque les photos
+//app.use(helmet());
+
+
 
 
 // Route de test
