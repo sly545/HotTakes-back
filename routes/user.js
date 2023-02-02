@@ -1,13 +1,14 @@
 const express = require("express");
 const router = express.Router();
 const UseControl = require("../controllers/user");
+const password = require("../middlewares/password");
 
 //Hachage du mot de passe
 //de l'utilisateur, ajout de
 //l'utilisateur à la base de
 //données//
 
-router.post("/signup",UseControl.signup, (req, res) => {
+router.post("/signup",password,UseControl.signup, (req, res) => {
   res.status(200).json({ "user": "Utilisateur bien enregistré" });
 });
 

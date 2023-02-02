@@ -7,6 +7,9 @@ const { error } = require("console");
 //logique pour affichez toute les sauces//
 
 exports.getAllSauce = (req, res, next) => {
+
+  console.log('Get All Sauces');
+
   Sauce.find()
     .then((sauces) => {
       res.status(200).json(sauces);
@@ -15,18 +18,21 @@ exports.getAllSauce = (req, res, next) => {
 };
 
 
-
+// Logique pour recup une sauce
 exports.getOneSauce = (req, res, next) => {
-  
+  console.log('Get One Sauces');
+
   Sauce.findOne({ _id: req.params.id })
-   
-    .then((sauce) => res.status(200).json(sauce))
-    
-    .catch((error) => res.status(404).json({ error }));
+    .then((sauce) => {
+      console.log(sauce);
+      res.status(200).json(sauce);
+    })
+    .catch((error) => res.status(404).send(error));
 };
-// logique por crée  sauces
 
 
+
+// logique pour crée une sauce
 exports.createSauce = (req, res, next) => {
   const sauceObject = JSON.parse(req.body.sauce);
   const initialisation = {
@@ -142,5 +148,4 @@ exports.deleteSauce = (req, res, next) => {
           res.status(500).json({ error });
       });
 };
-
 

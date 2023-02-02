@@ -8,7 +8,6 @@ const path = require("path");
 
 
 
-
 // Variables d'environnements
 require("dotenv").config();
 
@@ -52,7 +51,7 @@ app.use(express.json());
 // ça me bloque les photos
 //app.use(helmet());
 
-
+// Middleware express-rate-limit pour bloquer les brute forces
 
 
 // Route de test
@@ -69,3 +68,4 @@ app.use('/images',express.static(path.join(__dirname,'images')));
 
 
 module.exports = app;
+
