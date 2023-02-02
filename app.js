@@ -1,9 +1,19 @@
 const express = require('express');
 const app = express();
 
-//ça me bloque les photos
-//const helmet = require("helmet");
 
+const helmet = require("helmet");
+
+// Middleware helmet pour sécuriser les en-têtes HTTP
+// ça me bloquai les photos ils faut le configurer comme ça
+app.use(helmet.contentSecurityPolicy({
+  directives: {
+    'img-src': [`'self'`],
+    'default-src': [`'self'`]
+  }
+}))
+
+//?? je sais plus ç'est que çe truc
 const path = require("path");
 
 
@@ -21,7 +31,7 @@ const auth =require("./middlewares/auth");
 const saucesRouter = require("./routes/sauces");
 const usersRouter = require("./routes/user");
 
-
+ 
 // CORS
 app.use((req, res, next) => {
   // Autorise les requêtes depuis tous les domaines
@@ -47,9 +57,8 @@ app.use((req, res, next) => {
 // Middleware de body parsing
 app.use(express.json());
 
-// Middleware helmet pour sécuriser les en-têtes HTTP
-// ça me bloque les photos
-//app.use(helmet());
+
+
 
 // Middleware express-rate-limit pour bloquer les brute forces
 

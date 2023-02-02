@@ -2,6 +2,12 @@ const express = require("express");
 const router = express.Router();
 const UseControl = require("../controllers/user");
 const password = require("../middlewares/password");
+//je voulait le metrre dans le dossier midelwer mais ça marche pas quand je fais ça
+const raterLimit = require("express-rate-limit");
+const limiter = raterLimit({
+  windowMs: 5 * 60 * 1000, // 5 minutes
+  max: 50, // 50 essais
+});
 
 //Hachage du mot de passe
 //de l'utilisateur, ajout de
@@ -19,9 +25,9 @@ router.post("/signup",password,UseControl.signup, (req, res) => {
 //renvoie l _id de l'utilisateur
 //depuis la base de données
 //et un token web JSON signé
-//(contenant également l'_id
+//(contenant également l'_id 
 //de l'utilisateur).
-router.post("/login",UseControl.login, (req, res) => {
+router.post("/login",limiter,UseControl.login, (req, res) => {
   res.status(200).json({ "user": "Utilisateur bien conécter" });
 });
 
