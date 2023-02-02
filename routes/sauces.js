@@ -37,7 +37,7 @@ router.delete('/:id',auth,saucesController.deleteSauce,(req, res) => {
 
 
 
-router.post ('/:id/like',auth,(req,res)=> {
+router.post ('/:id/like',auth,saucesController.likeSauce,(req,res)=> {
   res.status(200).json({"sauces": "votre like est ajouter" })
 });
 

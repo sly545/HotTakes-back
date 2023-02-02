@@ -13,13 +13,4 @@ passwordSchema
 .is().not().oneOf(['Passw0rd', 'Password123']); // Blacklist these values
 
 module.exports = passwordSchema;
-console.log("---<CONTENU passwordScema");
-console.log(passwordSchema);
 
-/* module.exports = (req ,res,next) => {
-  if (passwordSchema.validate(req.body.passwordSchema)){
-   next();
-  }else{
-    return res.status(400).json({error:`le mots de passe n'est pas assez fort ${passwordSchema.validate('req.body.password',{ list: true})}`})
-  }
-} */

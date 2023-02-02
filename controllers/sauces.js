@@ -106,25 +106,102 @@ exports.createSauce = (req, res, next) => {
 //logique pour modifier la sauces//
 
 exports.modifySauce = (req, res, next) => {
-  const SauceObject = req.file ? {
-      ...JSON.parse(req.body.sauce),
-      imageUrl: `${req.protocol}://${req.get('host')}/images/${req.file.filename}`
-  } : { ...req.body };
-
-  delete SauceObject._userId;
-  Sauce.findOne({_id: req.params.id})
-      .then((Sauce) => {
-          if (Sauce.userId != req.auth.userId) {
-              res.status(401).json({ message : 'Not authorized'});
-          } else {
-              Sauce.updateOne({ _id: req.params.id}, { ...SauceObject, _id: req.params.id})
-              .then(() => res.status(200).json({message : 'Objet modifié!'}))
-              .catch(error => res.status(401).json({ error }));
+  // l'id de la sauce est l'id inscrit dans l'url
+  Sauce.findOne({ _id: req.params.id })
+    .then((sauce) => {
+      
+      let sauceBot;
+      const heatAvant = sauce.heat;
+    
+      
+       const immuable = {
+        userId: req.auth.userId,
+        likes: sauce.likes,
+        dislikes: sauce.dislikes,
+        usersLiked: sauce.usersLiked,
+        usersDisliked: sauce.usersDisliked,
+      };
+      
+      if (sauce.userId !== req.auth.userId) {
+        
+        return res.status(403).json("unauthorized request");
+       
+      } else if (req.file) {
+       
+        if (
+          req.file.mimetype === "image/jpeg" ||
+          req.file.mimetype === "image/png" ||
+          req.file.mimetype === "image/jpg" ||
+          req.file.mimetype === "image/bmp" ||
+          req.file.mimetype === "image/gif" ||
+          req.file.mimetype === "image/ico" ||
+          req.file.mimetype === "image/svg" ||
+          req.file.mimetype === "image/tiff" ||
+          req.file.mimetype === "image/tif" ||
+          req.file.mimetype === "image/webp"
+        ) {
+          const filename = sauce.imageUrl.split("/images/")[1];
+          const testImage = 'defaut/imagedefaut.png';
+          if(testImage != filename){
+          fs.unlink(`images/${filename}`, () => {});
           }
-      })
-      .catch((error) => {
-          res.status(400).json({ error });
-      });
+          const sauceObject = {
+            ...JSON.parse(req.body.sauce),
+            imageUrl: `${req.protocol}://${req.get("host")}/images/${
+              req.file.filename
+            }`,
+            ...immuable,
+          };
+          sauceBot = sauceObject;
+        } else {
+          const filename = sauce.imageUrl.split("/images/")[1];
+          
+          const testImage = 'defaut/imagedefaut.png';
+          if(testImage != filename){
+          fs.unlink(`images/${filename}`, () => {});
+          }
+          const sauceObject = {
+            ...JSON.parse(req.body.sauce),
+           
+            imageUrl: `${req.protocol}://${req.get(
+              "host"
+            )}/images/defaut/imagedefaut.png`,
+            ...immuable,
+          };
+          sauceBot = sauceObject;
+        }
+      } else {
+        req.body.imageUrl = sauce.imageUrl;
+        const sauceObject = {
+          ...req.body,
+          ...immuable,
+        };
+        sauceBot = sauceObject;
+      }
+      if (sauceBot.heat < 0 || sauceBot.heat > 10) {
+        sauceBot.heat = heatAvant;
+        console.log("valeur heat invalide, ancienne valeur heat conservée");
+      }
+
+      Sauce.updateOne(
+        { _id: req.params.id },
+        { ...sauceBot, _id: req.params.id }
+      )
+        .then(() =>
+          res
+            .status(201)
+            .json({ message: "modified sauce (FR)Objet modifié !" })
+        )
+        .catch((error) => res.status(400).json({ error }));
+    })
+    .catch((error) => {
+      if (req.file) {
+        
+        fs.unlink(`images/${req.file.filename}`, () => {});
+      }
+      
+      res.status(404).json({ error });
+    });
 };
 
 
@@ -149,3 +226,61 @@ exports.deleteSauce = (req, res, next) => {
       });
 };
 
+exports.likeSauce = (req, res, next) => {
+  
+  Sauce.findOne({ _id: req.params.id })
+    .then((sauce) => {
+      let valeurVote;
+      let votant = req.body.userId;
+      let like = sauce.usersLiked;
+      let unlike = sauce.usersDisliked;
+      let bon = like.includes(votant);
+      let mauvais = unlike.includes(votant);
+      if (bon === true) {
+        valeurVote = 1;
+      } else if (mauvais === true) {
+        valeurVote = -1;
+      } else {
+        valeurVote = 0;
+      }
+  
+      if (valeurVote === 0 && req.body.like === 1) {
+       
+        sauce.likes += 1;
+        
+        sauce.usersLiked.push(votant);
+      } else if (valeurVote === 1 && req.body.like === 0) {
+        sauce.likes -= 1;
+        const nouveauUsersLiked = like.filter((f) => f != votant);
+        sauce.usersLiked = nouveauUsersLiked;
+      } else if (valeurVote === -1 && req.body.like === 0) {
+        sauce.dislikes -= 1;
+      
+        const nouveauUsersDisliked = unlike.filter((f) => f != votant);
+        sauce.usersDisliked = nouveauUsersDisliked;
+    
+      } else if (valeurVote === 0 && req.body.like === -1) {
+    
+        sauce.dislikes += 1;
+        sauce.usersDisliked.push(votant);
+      } else {
+        console.log("tentavive de vote illégal");
+      }
+      Sauce.updateOne(
+        { _id: req.params.id },
+        {
+          likes: sauce.likes,
+          dislikes: sauce.dislikes,
+          usersLiked: sauce.usersLiked,
+          usersDisliked: sauce.usersDisliked,
+        }
+      )
+        .then(() => res.status(201).json({ message: "Vous venez de voter" }))
+        .catch((error) => {
+          if (error) {
+            console.log(error);
+          }
+        });
+    })
+    .catch((error) => res.status(404).json({ error }));
+};
