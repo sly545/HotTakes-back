@@ -34,6 +34,7 @@ exports.getOneSauce = (req, res, next) => {
 
 // logique pour crée une sauce
 exports.createSauce = (req, res, next) => {
+
   const sauceObject = JSON.parse(req.body.sauce);
   const initialisation = {
     likes: 0,
@@ -103,31 +104,30 @@ exports.createSauce = (req, res, next) => {
 
 
 
-//logique pour modifier la sauces//
-
+//logique pour modifier la sauces  //
+//La fonction "modifySauce" utilise la méthode "findOne" pour trouver une entrée de sauce dans la base de données en utilisant l'ID fourni dans la requête (req.params.id).
 exports.modifySauce = (req, res, next) => {
-  // l'id de la sauce est l'id inscrit dans l'url
+  
   Sauce.findOne({ _id: req.params.id })
     .then((sauce) => {
-      
+      //Si une entrée de sauce est trouvée, la fonction requise si l'utilisateur qui envoie la requête (req.auth.userId) est le propriétaire de l'entrée de sauce. 
       let sauceBot;
       const heatAvant = sauce.heat;
-    
-      
-       const immuable = {
+      // Création d'un objet avec des propriétés non modifiables.
+        const immuable = {
         userId: req.auth.userId,
         likes: sauce.likes,
         dislikes: sauce.dislikes,
         usersLiked: sauce.usersLiked,
         usersDisliked: sauce.usersDisliked,
       };
-      
+      // Si la sauce n'appartient pas à l'utilisateur authentifié, renvoie une erreur 403
       if (sauce.userId !== req.auth.userId) {
-        
         return res.status(403).json("unauthorized request");
-       
+
       } else if (req.file) {
-       
+       //Si l'utilisateur est autorisé à modifier l'entrée de sauce, la fonction reguarde si un fichier est inclus dans la requête. 
+       //Si c'est le cas, le fichier est vérifié pour vérifier s'il s'agit d'un format d'image valide (jpeg, png, jpg, etc.).
         if (
           req.file.mimetype === "image/jpeg" ||
           req.file.mimetype === "image/png" ||
@@ -140,11 +140,16 @@ exports.modifySauce = (req, res, next) => {
           req.file.mimetype === "image/tif" ||
           req.file.mimetype === "image/webp"
         ) {
+          //je nomme le non de l'encien fichier image
           const filename = sauce.imageUrl.split("/images/")[1];
+          // si ce lui çi correspond à une partie du nom de l'image par defaut
           const testImage = 'defaut/imagedefaut.png';
+           // si le nom de l'image ne correspont pas à l'image defaut
           if(testImage != filename){
+            //on efface le fichier qu'on remplace garce à fs
           fs.unlink(`images/${filename}`, () => {});
           }
+
           const sauceObject = {
             ...JSON.parse(req.body.sauce),
             imageUrl: `${req.protocol}://${req.get("host")}/images/${
@@ -153,7 +158,11 @@ exports.modifySauce = (req, res, next) => {
             ...immuable,
           };
           sauceBot = sauceObject;
-        } else {
+
+
+        } 
+        // Si le fichier téléchargé n'est pas une image, utilise une image par défaut
+        else {
           const filename = sauce.imageUrl.split("/images/")[1];
           
           const testImage = 'defaut/imagedefaut.png';
@@ -178,6 +187,7 @@ exports.modifySauce = (req, res, next) => {
         };
         sauceBot = sauceObject;
       }
+
       if (sauceBot.heat < 0 || sauceBot.heat > 10) {
         sauceBot.heat = heatAvant;
         console.log("valeur heat invalide, ancienne valeur heat conservée");
@@ -204,7 +214,7 @@ exports.modifySauce = (req, res, next) => {
     });
 };
 
-
+ 
 //logique pour suprimer la sauces
 
 exports.deleteSauce = (req, res, next) => {
@@ -225,6 +235,8 @@ exports.deleteSauce = (req, res, next) => {
           res.status(500).json({ error });
       });
 };
+
+/// LOGIQUE pour like et disliker les sauces
 
 exports.likeSauce = (req, res, next) => {
   
@@ -284,3 +296,4 @@ exports.likeSauce = (req, res, next) => {
     })
     .catch((error) => res.status(404).json({ error }));
 };
+

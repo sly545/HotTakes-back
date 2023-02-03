@@ -2,12 +2,7 @@ const express = require("express");
 const router = express.Router();
 const UseControl = require("../controllers/user");
 const password = require("../middlewares/password");
-//je voulait le metrre dans le dossier midelwer mais ça marche pas quand je fais ça
-const raterLimit = require("express-rate-limit");
-const limiter = raterLimit({
-  windowMs: 5 * 60 * 1000, // 5 minutes
-  max: 50, // 50 essais
-});
+const limiter = require("../middlewares/limiter")
 
 //Hachage du mot de passe
 //de l'utilisateur, ajout de

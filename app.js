@@ -16,8 +16,6 @@ app.use(helmet.contentSecurityPolicy({
 //?? je sais plus ç'est que çe truc
 const path = require("path");
 
-
-
 // Variables d'environnements
 require("dotenv").config();
 
@@ -53,20 +51,10 @@ app.use((req, res, next) => {
 
 
 
-
 // Middleware de body parsing
 app.use(express.json());
 
-
-
-
-// Middleware express-rate-limit pour bloquer les brute forces
-
-
 // Route de test
-app.get('/', (req, res) => {
-  res.send('HotTakes API is running !');
-});
 
 
 // Sauces router
