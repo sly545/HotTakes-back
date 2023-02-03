@@ -59,6 +59,7 @@ exports.createSauce = (req, res, next) => {
     req.file.mimetype === "image/tif" ||
     req.file.mimetype === "image/webp"
   ) {
+
     const sauce = new Sauce({
       ...sauceObject,
       imageUrl: `${req.protocol}://${req.get("host")}/images/${
@@ -79,14 +80,14 @@ exports.createSauce = (req, res, next) => {
       )
       .catch((error) => res.status(400).json({ error }));
    
-  } else {
+  } else { 
     const sauce = new Sauce({
       ...sauceObject,
       imageUrl: `${req.protocol}://${req.get(
         "host"
-      )}/images/defaut/imagedefaut.png`,
+      )}/:images/defaut/imagedefaut.png`,
       ...initialisation, 
-    });
+    });  
     if (sauce.heat < 0 || sauce.heat > 10) {
       sauce.heat = 0;
       console.log("valeur heat invalide, heat initialisé");
@@ -121,12 +122,13 @@ exports.modifySauce = (req, res, next) => {
         usersLiked: sauce.usersLiked,
         usersDisliked: sauce.usersDisliked,
       };
-      // Si la sauce n'appartient pas à l'utilisateur authentifié, renvoie une erreur 403
+      // Si la sauce n'appartient pas à l'utilisateur authentifié,pour le savoir on verifie si id de l'utilisateur est le meme que celui du token,
+      //si c'est pas le memem on renvoie une erreur 403,
       if (sauce.userId !== req.auth.userId) {
         return res.status(403).json("unauthorized request");
 
       } else if (req.file) {
-       //Si l'utilisateur est autorisé à modifier l'entrée de sauce, la fonction reguarde si un fichier est inclus dans la requête. 
+      //la fonction reguarde si un fichier est inclus dans la requête. 
        //Si c'est le cas, le fichier est vérifié pour vérifier s'il s'agit d'un format d'image valide (jpeg, png, jpg, etc.).
         if (
           req.file.mimetype === "image/jpeg" ||
@@ -150,6 +152,7 @@ exports.modifySauce = (req, res, next) => {
           fs.unlink(`images/${filename}`, () => {});
           }
 
+          //j'extrait la sauce de la requete avec parse dans et j'ajoute les infos de description et l'image.
           const sauceObject = {
             ...JSON.parse(req.body.sauce),
             imageUrl: `${req.protocol}://${req.get("host")}/images/${
@@ -157,6 +160,7 @@ exports.modifySauce = (req, res, next) => {
             }`,
             ...immuable,
           };
+
           sauceBot = sauceObject;
 
 

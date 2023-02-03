@@ -1,7 +1,5 @@
 const express = require('express');
 const app = express();
-
-
 const helmet = require("helmet");
 
 // Middleware helmet pour sécuriser les en-têtes HTTP
@@ -56,13 +54,13 @@ app.use(express.json());
 
 // Route de test
 
-
+app.use('/images',express.static(path.join(__dirname,'images')));
 // Sauces router
 app.use('/api/sauces', saucesRouter);
 // User router
 app.use('/api/auth', usersRouter);
-app.use('/images',express.static(path.join(__dirname,'images')));
 
+ 
 
 module.exports = app;
 
