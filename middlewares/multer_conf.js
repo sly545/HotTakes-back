@@ -1,7 +1,7 @@
 
 
 const multer = require("multer");
-
+//types de fichier qui sont axepter
 const MIME_TYPES = {
   "image/jpg": "jpg",
   "image/jpeg": "jpg",
@@ -43,10 +43,9 @@ const storage = multer.diskStorage({
       callback(null, name + Date.now() + "." + extension);
       // si ce n'est pas un fichier image
     } else {
-
-      //log qui ne fonction pas
-      console.log("fichier non accepté");
       
+      console.log("fichier non accepté seul les images sont autoriser");
+      // cette fonction callback va isoler le fichier qui n'est pas une image.
       callback( 
         null,
         "isole/" + req.auth.userId + "_" + name + Date.now() + "." + extension

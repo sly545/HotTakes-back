@@ -1,5 +1,7 @@
+//j'importe passorwd validator pour securiser les mots passe avec les bonnes pratique de securiter
 const passwordSchema = require('../models/password');
 
+//model avec ajout de passorwd validator
 module.exports = (req ,res,next) => {
   if (passwordSchema.validate(req.body.password)){
    next();

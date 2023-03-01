@@ -47,12 +47,16 @@ app.use((req, res, next) => {
   next();
 });
 
-
+ 
 
 // Middleware de body parsing
 app.use(express.json());
 
 // Route de test
+app.get('/', (req, res) => {
+  console.log('GET /');
+  res.send("Welcome on HotTakes API");
+})
 
 app.use('/images',express.static(path.join(__dirname,'images')));
 // Sauces router

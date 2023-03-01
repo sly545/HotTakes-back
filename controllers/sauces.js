@@ -34,8 +34,9 @@ exports.getOneSauce = (req, res, next) => {
 
 // logique pour crée une sauce
 exports.createSauce = (req, res, next) => {
-
+  // Convertit la chaîne de caractères JSON en objet JS
   const sauceObject = JSON.parse(req.body.sauce);
+  // Initialise les likes, dislikes, usersLiked et usersDisliked à 0 ou tableau vide
   const initialisation = {
     likes: 0,
     dislikes: 0,
@@ -43,11 +44,11 @@ exports.createSauce = (req, res, next) => {
     usersDisliked: [],
   };
 
+  // Vérifie si l'utilisateur est autorisé à ajouter une sauce
   if (sauceObject.userId !== req.auth.userId) {
-   
     return res.status(403).json("unauthorized request");
-    
   } else if (
+    // Vérifie si le type MIME du fichier est une image valide
     req.file.mimetype === "image/jpeg" ||
     req.file.mimetype === "image/png" ||
     req.file.mimetype === "image/jpg" ||
@@ -59,7 +60,7 @@ exports.createSauce = (req, res, next) => {
     req.file.mimetype === "image/tif" ||
     req.file.mimetype === "image/webp"
   ) {
-
+    // Crée une nouvelle sauce avec l'image téléchargée
     const sauce = new Sauce({
       ...sauceObject,
       imageUrl: `${req.protocol}://${req.get("host")}/images/${
@@ -67,10 +68,12 @@ exports.createSauce = (req, res, next) => {
       }`,
       ...initialisation,
     });
+    // Vérifie si la valeur heat est valide, sinon initialise à 0
     if (sauce.heat < 0 || sauce.heat > 10) {
       sauce.heat = 0;
       console.log("valeur heat invalide, heat initialisé");
     }
+    // Enregistre la nouvelle sauce dans la base de données
     sauce
       .save()
       .then(() =>
@@ -79,57 +82,32 @@ exports.createSauce = (req, res, next) => {
           .json({ message: "POST recorded sauce (FR)sauce enregistrée !" })
       )
       .catch((error) => res.status(400).json({ error }));
-   
-  } else { 
-    const sauce = new Sauce({
-      ...sauceObject,
-      imageUrl: `${req.protocol}://${req.get(
-        "host"
-      )}/:images/defaut/imagedefaut.png`,
-      ...initialisation, 
-    });  
-    if (sauce.heat < 0 || sauce.heat > 10) {
-      sauce.heat = 0;
-      console.log("valeur heat invalide, heat initialisé");
-    }
-    sauce
-      .save()
-      .then(() =>
-        res
-          .status(201)
-          .json({ message: "POST recorded sauce (FR)sauce enregistrée !" })
-      )
-      .catch((error) => res.status(400).json({ error }));
-  }
+  } 
 };
 
 
 
-//logique pour modifier la sauces  //
-//La fonction "modifySauce" utilise la méthode "findOne" pour trouver une entrée de sauce dans la base de données en utilisant l'ID fourni dans la requête (req.params.id).
+
+
 exports.modifySauce = (req, res, next) => {
-  
   Sauce.findOne({ _id: req.params.id })
     .then((sauce) => {
-      //Si une entrée de sauce est trouvée, la fonction requise si l'utilisateur qui envoie la requête (req.auth.userId) est le propriétaire de l'entrée de sauce. 
       let sauceBot;
       const heatAvant = sauce.heat;
-      // Création d'un objet avec des propriétés non modifiables.
-        const immuable = {
+
+      const immuable = {
         userId: req.auth.userId,
         likes: sauce.likes,
         dislikes: sauce.dislikes,
         usersLiked: sauce.usersLiked,
         usersDisliked: sauce.usersDisliked,
       };
-      // Si la sauce n'appartient pas à l'utilisateur authentifié,pour le savoir on verifie si id de l'utilisateur est le meme que celui du token,
-      //si c'est pas le memem on renvoie une erreur 403,
+
       if (sauce.userId !== req.auth.userId) {
         return res.status(403).json("unauthorized request");
-
       } else if (req.file) {
-      //la fonction reguarde si un fichier est inclus dans la requête. 
-       //Si c'est le cas, le fichier est vérifié pour vérifier s'il s'agit d'un format d'image valide (jpeg, png, jpg, etc.).
+        //la fonction regarde si un fichier est inclus dans la requête. 
+        //Si c'est le cas, le fichier est vérifié s'il s'agit d'un format d'image valide (jpeg, png, jpg, etc.).
         if (
           req.file.mimetype === "image/jpeg" ||
           req.file.mimetype === "image/png" ||
@@ -142,17 +120,9 @@ exports.modifySauce = (req, res, next) => {
           req.file.mimetype === "image/tif" ||
           req.file.mimetype === "image/webp"
         ) {
-          //je nomme le non de l'encien fichier image
           const filename = sauce.imageUrl.split("/images/")[1];
-          // si ce lui çi correspond à une partie du nom de l'image par defaut
-          const testImage = 'defaut/imagedefaut.png';
-           // si le nom de l'image ne correspont pas à l'image defaut
-          if(testImage != filename){
-            //on efface le fichier qu'on remplace garce à fs
           fs.unlink(`images/${filename}`, () => {});
-          }
 
-          //j'extrait la sauce de la requete avec parse dans et j'ajoute les infos de description et l'image.
           const sauceObject = {
             ...JSON.parse(req.body.sauce),
             imageUrl: `${req.protocol}://${req.get("host")}/images/${
@@ -162,29 +132,8 @@ exports.modifySauce = (req, res, next) => {
           };
 
           sauceBot = sauceObject;
-
-
-        } 
-        // Si le fichier téléchargé n'est pas une image, utilise une image par défaut
-        else {
-          const filename = sauce.imageUrl.split("/images/")[1];
-          
-          const testImage = 'defaut/imagedefaut.png';
-          if(testImage != filename){
-          fs.unlink(`images/${filename}`, () => {});
-          }
-          const sauceObject = {
-            ...JSON.parse(req.body.sauce),
-           
-            imageUrl: `${req.protocol}://${req.get(
-              "host"
-            )}/images/defaut/imagedefaut.png`,
-            ...immuable,
-          };
-          sauceBot = sauceObject;
         }
       } else {
-        req.body.imageUrl = sauce.imageUrl;
         const sauceObject = {
           ...req.body,
           ...immuable,
@@ -210,13 +159,12 @@ exports.modifySauce = (req, res, next) => {
     })
     .catch((error) => {
       if (req.file) {
-        
         fs.unlink(`images/${req.file.filename}`, () => {});
       }
-      
       res.status(404).json({ error });
     });
 };
+
 
  
 //logique pour suprimer la sauces

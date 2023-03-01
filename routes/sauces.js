@@ -25,18 +25,18 @@ router.get('/:id',auth,saucesController.getOneSauce,(req, res) => {
   res.status(200).json({ "sauces": "Voici la sauce que vous avez demandés" });
 });
 
-
+//route pour modifier les sauces
 router.put('/:id',auth,multer,saucesController.modifySauce,(req, res) => {
   res.status(200).json({ "sauces": "sauces modifier" });
 });
 
-
+//route pour suprimer les sauces
 router.delete('/:id',auth,saucesController.deleteSauce,(req, res) => {
   res.status(200).json({ "sauces": "sauces suprimer" });
 });
 
 
-
+//route pour liker les sauces
 router.post ('/:id/like',auth,saucesController.likeSauce,(req,res)=> {
   res.status(200).json({"sauces": "votre like est ajouter" })
 });

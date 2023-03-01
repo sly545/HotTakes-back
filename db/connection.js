@@ -1,6 +1,9 @@
-const mongoose = require('mongoose');
+//mongosse me permet de me conecter a la base de donner
 
-mongoose.connect('mongodb+srv://sylvain:ROMbibamb01@cluster0.hne8jxc.mongodb.net/test',
+const mongoose = require('mongoose');
+require('dotenv').config();
+
+mongoose.connect(process.env.DB_URL,
 { useNewUrlParser: true,
   useUnifiedTopology: true })  
 .then(() => console.log('Connexion à MongoDB réussie !'))
