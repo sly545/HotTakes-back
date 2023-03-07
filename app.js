@@ -11,8 +11,8 @@ app.use(helmet.contentSecurityPolicy({
   }
 }))
 
-//?? je sais plus ç'est que çe truc
-const path = require("path");
+
+
 
 // Variables d'environnements
 require("dotenv").config();
@@ -58,6 +58,10 @@ app.get('/', (req, res) => {
   res.send("Welcome on HotTakes API");
 })
 
+
+// module qui permet de travailler avec les chemins de fichiers et de répertoires.
+const path = require("path");
+//chemin static pour les images.
 app.use('/images',express.static(path.join(__dirname,'images')));
 // Sauces router
 app.use('/api/sauces', saucesRouter);

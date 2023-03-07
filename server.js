@@ -16,8 +16,9 @@ const port = parseInt(val, 10);
   return false;
 };
 
-//je defini le port grace à normalisePort et je le mets dans une constance
-const port = normalizePort(process.env.PORT || '3000');
+
+
+const port = normalizePort(process.env.PORT);
 app.set('port', port);
 
 //la fonction errorHandler recherche les ereures et les enregistre sur le serveur
@@ -44,7 +45,7 @@ const errorHandler = error => {
 
 //creation du server 
 const server = http.createServer(app);
-//errorHanddler pour gerer les erreur comme pour le port 3000
+//errorHanddler pour gerer les erreurs comme pour le port 3000
 server.on('error', errorHandler);
 //ecouter d'evenement qui ecoute le port 3000 et ensuite il indique çe qui si il est bien sur le bon port.
 server.on('listening', () => {
