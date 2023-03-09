@@ -1,4 +1,4 @@
-const Sauce = require("../models/sauces");
+const Sauce = require("../models/sauces"); // j'importe le model des sauces
 
 const fs = require("fs");
 
@@ -33,137 +33,94 @@ exports.getOneSauce = (req, res, next) => {
 
 
 // logique pour crée une sauce
-exports.createSauce = (req, res, next) => {
-  // Convertit la chaîne de caractères JSON en objet JS
-  const sauceObject = JSON.parse(req.body.sauce);
-  // Initialise les likes, dislikes, usersLiked et usersDisliked à 0 ou tableau vide
-  const initialisation = {
-    likes: 0,
-    dislikes: 0,
-    usersLiked: [],
-    usersDisliked: [],
-  };
-
-  // Vérifie si l'utilisateur est autorisé à ajouter une sauce
-  if (sauceObject.userId !== req.auth.userId) {
-    return res.status(403).json("unauthorized request");
-  } else if (
-    // Vérifie si le type MIME du fichier est une image valide
-    req.file.mimetype === "image/jpeg" ||
-    req.file.mimetype === "image/png" ||
-    req.file.mimetype === "image/jpg" ||
-    req.file.mimetype === "image/bmp" ||
-    req.file.mimetype === "image/gif" ||
-    req.file.mimetype === "image/ico" ||
-    req.file.mimetype === "image/svg" ||
-    req.file.mimetype === "image/tiff" ||
-    req.file.mimetype === "image/tif" ||
-    req.file.mimetype === "image/webp"
-  ) {
-    // Crée une nouvelle sauce avec l'image téléchargée
-    const sauce = new Sauce({
-      ...sauceObject,
-      imageUrl: `${req.protocol}://${req.get("host")}/images/${
-        req.file.filename
-      }`,
-      ...initialisation,
-    });
-    // Vérifie si la valeur heat est valide, sinon initialise à 0
-    if (sauce.heat < 0 || sauce.heat > 10) {
-      sauce.heat = 0;
-      console.log("valeur heat invalide, heat initialisé");
+// La fonction createSauce est exportée comme middleware pour la route POST /api/sauces
+exports.createSauce = async (req, res, next) => {
+  try {
+    // Conversion de la chaîne de caractères JSON en objet JS
+    const sauceObject = JSON.parse(req.body.sauce);
+    // Récupération de l'ID utilisateur dans le token d'authentification
+    const userId = req.auth.userId;
+    // Vérification que l'utilisateur est autorisé à ajouter une sauce
+    if (sauceObject.userId !== userId) {
+      return res.status(403).json("unauthorized request");
     }
-    // Enregistre la nouvelle sauce dans la base de données
-    sauce
-      .save()
-      .then(() =>
-        res
-          .status(201)
-          .json({ message: "POST recorded sauce (FR)sauce enregistrée !" })
-      )
-      .catch((error) => res.status(400).json({ error }));
-  } 
-};
-
-
-
-
-
-exports.modifySauce = (req, res, next) => {
-  Sauce.findOne({ _id: req.params.id })
-    .then((sauce) => {
-      let sauceBot;
-      const heatAvant = sauce.heat;
-
-      const immuable = {
-        userId: req.auth.userId,
-        likes: sauce.likes,
-        dislikes: sauce.dislikes,
-        usersLiked: sauce.usersLiked,
-        usersDisliked: sauce.usersDisliked,
-      };
-
-      if (sauce.userId !== req.auth.userId) {
-        return res.status(403).json("unauthorized request");
-      } else if (req.file) {
-        //la fonction regarde si un fichier est inclus dans la requête. 
-        //Si c'est le cas, le fichier est vérifié s'il s'agit d'un format d'image valide (jpeg, png, jpg, etc.).
-        if (
-          req.file.mimetype === "image/jpeg" ||
-          req.file.mimetype === "image/png" ||
-          req.file.mimetype === "image/jpg" ||
-          req.file.mimetype === "image/bmp" ||
-          req.file.mimetype === "image/gif" ||
-          req.file.mimetype === "image/ico" ||
-          req.file.mimetype === "image/svg" ||
-          req.file.mimetype === "image/tiff" ||
-          req.file.mimetype === "image/tif" ||
-          req.file.mimetype === "image/webp"
-        ) {
-          const filename = sauce.imageUrl.split("/images/")[1];
-          fs.unlink(`images/${filename}`, () => {});
-
-          const sauceObject = {
-            ...JSON.parse(req.body.sauce),
-            imageUrl: `${req.protocol}://${req.get("host")}/images/${
-              req.file.filename
-            }`,
-            ...immuable,
-          };
-
-          sauceBot = sauceObject;
-        }
-      } else {
-        const sauceObject = {
-          ...req.body,
-          ...immuable,
-        };
-        sauceBot = sauceObject;
-      }
-
-      if (sauceBot.heat < 0 || sauceBot.heat > 10) {
-        sauceBot.heat = heatAvant;
-        console.log("valeur heat invalide, ancienne valeur heat conservée");
-      }
-
-      Sauce.updateOne(
-        { _id: req.params.id },
-        { ...sauceBot, _id: req.params.id }
-      )
-        .then(() =>
-          res
-            .status(201)
-            .json({ message: "modified sauce (FR)Objet modifié !" })
-        )
-        .catch((error) => res.status(400).json({ error }));
-    })
-    .catch((error) => {
-      if (req.file) {
-        fs.unlink(`images/${req.file.filename}`, () => {});
-      }
-      res.status(404).json({ error });
+    // Création d'une nouvelle instance de Sauce avec les données de la requête
+    const sauce = new Sauce({
+      ...sauceObject, // Copie toutes les propriétés de sauceObject
+      imageUrl: `${req.protocol}://${req.get("host")}/images/${req.file.filename}`, // Ajout de l'URL de l'image
+      likes: 0, // Initialisation des likes à 0
+      dislikes: 0, // Initialisation des dislikes à 0
+      usersLiked: [], // Initialisation du tableau des utilisateurs ayant liké à vide
+      usersDisliked: [], // Initialisation du tableau des utilisateurs ayant disliké à vide
+      heat: Math.min(Math.max(sauceObject.heat, 0), 10), // Vérification de la validité de la valeur heat et initialisation à 0 si invalide
     });
+    // Sauvegarde de la nouvelle sauce dans la base de données
+    await sauce.save();
+    // Renvoi de la réponse avec le code de statut 201 et un message de confirmation
+    res.status(201).json({ message: "POST recorded sauce (FR)sauce enregistrée !" });
+  } catch (error) {
+    // Renvoi de la réponse avec le code de statut 400 et l'erreur rencontrée
+    res.status(400).json({ error });
+  }
 };
+
+
+
+
+
+
+// Si l'opération est réussie, elle renvoie un message indiquant que l'objet a été modifié 
+exports.modifySauce = async (req, res, next) => {
+  try {
+    // Récupération de la sauce à modifier
+    const sauce = await Sauce.findById(req.params.id);
+
+    // Vérification que l'utilisateur a le droit de modifier la sauce
+    if (sauce.userId !== req.auth.userId) {
+      return res.status(403).json("unauthorized request");
+    }
+
+    // Création d'un objet immuable contenant les données à ne pas modifier
+    const immuable = {
+      userId: req.auth.userId,
+      likes: sauce.likes,
+      dislikes: sauce.dislikes,
+      usersLiked: sauce.usersLiked,
+      usersDisliked: sauce.usersDisliked,
+    };
+
+    // Création d'un objet représentant la nouvelle sauce
+    const sauceObject = {
+      ...req.body,
+      ...immuable,
+    };
+
+    // Si une nouvelle image est incluse dans la requête, on la traite
+    if (req.file) {
+      const filename = sauce.imageUrl.split("/images/")[1];
+      fs.unlink(`images/${filename}`, () => {});
+      sauceObject.imageUrl = `${req.protocol}://${req.get("host")}/images/${req.file.filename}`;
+    }
+
+    // Si la valeur de heat est invalide, on conserve l'ancienne valeur
+    if (sauceObject.heat < 0 || sauceObject.heat > 10) {
+      sauceObject.heat = sauce.heat;
+      console.log("valeur heat invalide, ancienne valeur heat conservée");
+    }
+
+    // Mise à jour de la sauce dans la base de données
+    await Sauce.updateOne({ _id: req.params.id }, sauceObject);
+
+    res.status(201).json({ message: "modified sauce (FR)Objet modifié !" });
+  } catch (error) {
+    // En cas d'erreur, on supprime l'image si elle a été uploadée
+    if (req.file) {
+      fs.unlink(`images/${req.file.filename}`, () => {});
+    }
+    res.status(404).json({ error });
+  }
+};
+
 
 
  
@@ -188,64 +145,58 @@ exports.deleteSauce = (req, res, next) => {
       });
 };
 
+
 /// LOGIQUE pour like et disliker les sauces
 
+// Mettre à jour le nombre de likes et de dislikes pour une sauce donnée
 exports.likeSauce = (req, res, next) => {
-  
-  Sauce.findOne({ _id: req.params.id })
-    .then((sauce) => {
-      let valeurVote;
-      let votant = req.body.userId;
-      let like = sauce.usersLiked;
-      let unlike = sauce.usersDisliked;
-      let bon = like.includes(votant);
-      let mauvais = unlike.includes(votant);
-      if (bon === true) {
-        valeurVote = 1;
-      } else if (mauvais === true) {
-        valeurVote = -1;
-      } else {
-        valeurVote = 0;
-      }
-  
-      if (valeurVote === 0 && req.body.like === 1) {
-       
-        sauce.likes += 1;
-        
-        sauce.usersLiked.push(votant);
-      } else if (valeurVote === 1 && req.body.like === 0) {
-        sauce.likes -= 1;
-        const nouveauUsersLiked = like.filter((f) => f != votant);
-        sauce.usersLiked = nouveauUsersLiked;
-      } else if (valeurVote === -1 && req.body.like === 0) {
-        sauce.dislikes -= 1;
-      
-        const nouveauUsersDisliked = unlike.filter((f) => f != votant);
-        sauce.usersDisliked = nouveauUsersDisliked;
-    
-      } else if (valeurVote === 0 && req.body.like === -1) {
-    
-        sauce.dislikes += 1;
-        sauce.usersDisliked.push(votant);
-      } else {
-        console.log("tentavive de vote illégal");
-      }
-      Sauce.updateOne(
-        { _id: req.params.id },
-        {
-          likes: sauce.likes,
-          dislikes: sauce.dislikes,
-          usersLiked: sauce.usersLiked,
-          usersDisliked: sauce.usersDisliked,
-        }
-      )
-        .then(() => res.status(201).json({ message: "Vous venez de voter" }))
-        .catch((error) => {
-          if (error) {
-            console.log(error);
-          }
-        });
-    })
-    .catch((error) => res.status(404).json({ error }));
-};
+  const { id } = req.params;
+  const { userId, like } = req.auth; // Récupérer les données d'authentification
 
+  let incLikes = 0, incDislikes = 0;
+
+  // Trouver la sauce correspondante dans la base de données
+  Sauce.findOne({ _id: id }).then(sauce => {
+    const usersLiked = sauce.usersLiked || [];
+    const usersDisliked = sauce.usersDisliked || [];
+    const userIndex = usersLiked.indexOf(userId);
+    const userDislikedIndex = usersDisliked.indexOf(userId);
+
+    // Mettre à jour les tableaux d'utilisateurs qui ont aimé ou n'ont pas aimé la sauce
+    if (like === 1) {
+      if (userIndex < 0) {
+        usersLiked.push(userId);
+        incLikes = 1;
+      }
+    } else if (like === -1) {
+      if (userDislikedIndex < 0) {
+        usersDisliked.push(userId);
+        incDislikes = 1;
+      }
+    } else if (like === 0) {
+      if (userIndex >= 0) {
+        usersLiked.splice(userIndex, 1);
+        incLikes = -1;
+      } else if (userDislikedIndex >= 0) {
+        usersDisliked.splice(userDislikedIndex, 1);
+        incDislikes = -1;
+      }
+    }
+
+    // Mettre à jour les données de la sauce dans la base de données
+    Sauce.updateOne(
+      { _id: id },
+      {
+        $inc: { likes: incLikes, dislikes: incDislikes },
+        $set: { usersLiked: usersLiked, usersDisliked: usersDisliked }
+      }
+    )
+      .then(() => res.status(201).json({ message: "Vous venez de voter" }))
+      .catch((error) => {
+        if (error) {
+          console.log(error);
+        }
+      });
+  })
+  .catch((error) => res.status(404).json({ error }));
+};

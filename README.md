@@ -1,2 +1,7 @@
 # HOT-take-API
-api projet P6
+Bienvenue dans le projet HOT-take-API !
+
+
+
+
+

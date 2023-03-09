@@ -13,6 +13,6 @@ const saucesSchema = mongoose.Schema({
   usersLiked: {type:[String]},
   usersDisliked: {type:[String]},
 });
-//Et j'exporte le shema
+//Et j'exporte le shema 
 module.exports = mongoose.model('sauces', saucesSchema);
 
